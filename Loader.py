@@ -8,7 +8,7 @@ class Loader:
     counter = 0
     loadChar = '#'
 
-    def __init__(self, range, description="Loader", loadingChar="#"):
+    def __init__(self, range : range, description="Loader", loadingChar="#"):
         if range.start < 0:
             oneMinusMulStart = -1 * range.start
             self.start = 0
