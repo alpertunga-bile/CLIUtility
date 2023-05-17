@@ -1,0 +1,111 @@
+from shutil import rmtree
+from os import remove
+from subprocess import call, DEVNULL, PIPE
+from os.path import exists
+from platform import system
+
+class StartManager:
+    osName = None
+    venvName = None
+
+    def __init__(self, envName):
+        self.osName = system()
+        self.venvName = envName
+
+    def RunCommand(self, command, isSilent=True):
+        if isSilent:
+            result = call(command, shell=True, stdout=DEVNULL)
+        else:
+            result = call(command, shell=True, stdout=PIPE)
+            _ = print("Command executed successfully") if result == 0 else print(f"Error occured when running {command}")
+
+    """
+    Get Command Functions
+    """
+
+    def GetCreateEnvironmentCommand(self):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"pip install virtualenv && virtual {self.venvName}"
+        elif self.osName == 'Windows':
+            venvCommand += f"py -m venv {self.venvName}"
+        
+        return venvCommand
+    
+    def GetInstallWRequirementsCommand(self):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"source {self.venvName}/bin/activate && "
+            venvCommand += "pip3 install -r requirements.txt && "
+            venvCommand += "deactivate"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\activate.bat && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\pip.exe install -r requirements.txt && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\deactivate.bat"
+        
+        return venvCommand
+    
+    def GetInstallWPackagesCommand(self, path):
+        packageFile = open(path, "r")
+        packages = packageFile.readlines()
+        packageFile.close()
+
+        pipPackageCommand = " ".join(packages)
+
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"source {self.venvName}/bin/activate && "
+            venvCommand += f"pip3 install {pipPackageCommand} && "
+            venvCommand += "deactivate"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\activate.bat && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\pip.exe install {pipPackageCommand} && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\deactivate.bat"
+        
+        return venvCommand
+    
+    def GetCreateRequirementsFileCommand(self):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"source {self.venvName}/bin/activate && "
+            venvCommand += f"pip3 freeze > requirements.txt && "
+            venvCommand += "deactivate"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\activate.bat && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\pip.exe freeze > requirements.txt && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\deactivate.bat"
+
+        return venvCommand
+    
+    """
+    Create Functions
+    """
+
+    def CreateEnvironment(self, removeExistsEnvironment=False):
+        if removeExistsEnvironment is False and exists(self.venvName):
+            print(f"{self.venvName} virtual environment is already exists")
+            return
+        
+        if exists(self.venvName):
+            rmtree(self.venvName)
+
+        self.RunCommand(self.GetCreateEnvironmentCommand())
+
+    def CreateEnvironmentWRequirements(self, removeExistsEnvironment=False):
+        self.CreateEnvironment(removeExistsEnvironment)
+
+        if exists("requirements.txt") is False:
+            print("requirements.txt is not found")
+            return
+
+        self.RunCommand(self.GetInstallWRequirementsCommand())
+
+    def CreateEnvironmentWPackages(self, packagesPath, removeExistsEnvironment=False):
+        self.CreateEnvironment(removeExistsEnvironment)
+
+        if exists(packagesPath) is False:
+            print(f"{packagesPath} is not exists")
+            return
+
+        self.RunCommand(self.GetInstallWPackagesCommand(packagesPath))
+        self.RunCommand(self.GetCreateRequirementsFileCommand())
