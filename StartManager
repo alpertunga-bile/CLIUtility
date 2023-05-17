@@ -3,17 +3,20 @@ from os import remove
 from subprocess import call, DEVNULL, PIPE
 from os.path import exists
 from platform import system
+from time import sleep
 
 class StartManager:
-    osName = None
-    venvName = None
+    osName = ""
+    venvName = "venv"
+    isSilent = False
 
-    def __init__(self, envName):
+    def __init__(self, envName, isSilent=False):
         self.osName = system()
         self.venvName = envName
+        self.isSilent = isSilent
 
-    def RunCommand(self, command, isSilent=True):
-        if isSilent:
+    def RunCommand(self, command):
+        if self.isSilent:
             result = call(command, shell=True, stdout=DEVNULL)
         else:
             result = call(command, shell=True, stdout=PIPE)
@@ -77,6 +80,54 @@ class StartManager:
 
         return venvCommand
     
+    def GetCreateNewRequirementsFileCommand(self):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"source {self.venvName}/bin/activate && pip3 freeze > new_requirements.txt"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\activate.bat && .\\{self.venvName}\\Scripts\\pip.exe freeze > new_requirements.txt"
+
+        return venvCommand
+    
+    def GetInstallWNewRequirementsFileCommand(self):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += "pip3 install -r new_requirements.txt --upgrade && "
+            venvCommand += "deactivate"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\pip.exe install -r new_requirements.txt --upgrade && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\deactivate.bat"
+        
+        return venvCommand
+    
+    def GetRunFileCommand(self, filepath):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"source {self.venvName}/bin/activate && "
+            venvCommand += f"python3 {filepath} && "
+            venvCommand += "deactivate"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\activate.bat && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\python.exe {filepath} && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\deactivate.bat"
+
+        return venvCommand
+    
+    """
+    Run Functions
+    """
+
+    def RunFile(self, filepath):
+        if exists(self.osName) is False:
+            print(f"{self.osName} is not exists")
+            return
+        
+        if exists(filepath) is False:
+            print(f"{filepath} is not exists")
+            return
+
+        self.RunCommand(self.GetRunFileCommand(filepath))
+
     """
     Create Functions
     """
@@ -91,8 +142,22 @@ class StartManager:
 
         self.RunCommand(self.GetCreateEnvironmentCommand())
 
-    def CreateEnvironmentWRequirements(self, removeExistsEnvironment=False):
+    def CreateEnvironmentWRequirementsFile(self, removeExistsEnvironment=False):
         self.CreateEnvironment(removeExistsEnvironment)
+        self.InstallWRequirementsFile()
+
+    def CreateEnvironmentWPackageNames(self, packagesPath, removeExistsEnvironment=False):
+        self.CreateEnvironment(removeExistsEnvironment)
+        self.InstallWPackageNames(packagesPath)
+
+    """
+    Install Functions
+    """
+
+    def InstallWRequirementsFile(self):
+        if exists(self.osName) is False:
+            print(f"{self.osName} is not exists")
+            return
 
         if exists("requirements.txt") is False:
             print("requirements.txt is not found")
@@ -100,12 +165,42 @@ class StartManager:
 
         self.RunCommand(self.GetInstallWRequirementsCommand())
 
-    def CreateEnvironmentWPackages(self, packagesPath, removeExistsEnvironment=False):
-        self.CreateEnvironment(removeExistsEnvironment)
-
-        if exists(packagesPath) is False:
-            print(f"{packagesPath} is not exists")
+    def InstallWPackageNames(self, path):
+        if exists(self.osName) is False:
+            print(f"{self.osName} is not exists")
             return
 
-        self.RunCommand(self.GetInstallWPackagesCommand(packagesPath))
+        if exists(path) is False:
+            print(f"{path} is not exists")
+            return
+
+        self.RunCommand(self.GetInstallWPackagesCommand(path))
         self.RunCommand(self.GetCreateRequirementsFileCommand())
+
+    """
+    Update Functions
+    """
+    def UpdateEnvironment(self):
+        if exists(self.osName) is False:
+            print(f"{self.osName} is not exists")
+            return
+
+        print("Updating ...")
+        self.RunCommand(self.GetCreateNewRequirementsFileCommand())
+
+        sleep(0.5)
+
+        file = open("new_requirements.txt", "r")
+        lines = file.readlines()
+        file.close()
+
+        file = open("new_requirements.txt", "w")
+        for line in lines:
+            file.writelines(line.replace("==", ">="))
+
+        file.close()
+        
+        sleep(0.5)
+
+        self.RunCommand(self.GetInstallWNewRequirementsFileCommand())
+        remove("new_requirements.txt")
