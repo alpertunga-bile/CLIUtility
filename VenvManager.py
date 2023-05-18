@@ -5,7 +5,7 @@ from os.path import exists
 from platform import system
 from time import sleep
 
-class StartManager:
+class VenvManager:
     osName = ""
     venvName = "venv"
     isSilent = False
@@ -21,6 +21,9 @@ class StartManager:
         else:
             result = call(command, shell=True, stdout=PIPE)
             _ = print("Command executed successfully") if result == 0 else print(f"Error occured when running {command}")
+
+    def IsEnvironmentCreated(self):
+        return exists(self.venvName)
 
     """
     Get Command Functions
