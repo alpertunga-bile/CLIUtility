@@ -118,8 +118,8 @@ class StartManager:
     """
 
     def RunFile(self, filepath):
-        if exists(self.osName) is False:
-            print(f"{self.osName} is not exists")
+        if exists(self.venvName) is False:
+            print(f"{self.venvName} is not exists")
             return
         
         if exists(filepath) is False:
@@ -155,8 +155,8 @@ class StartManager:
     """
 
     def InstallWRequirementsFile(self):
-        if exists(self.osName) is False:
-            print(f"{self.osName} is not exists")
+        if exists(self.venvName) is False:
+            print(f"{self.venvName} is not exists")
             return
 
         if exists("requirements.txt") is False:
@@ -165,9 +165,24 @@ class StartManager:
 
         self.RunCommand(self.GetInstallWRequirementsCommand())
 
+    def InstallWPackageName(self, packageName):
+        if exists(self.venvName) is False:
+            print(f"{self.venvName} is not exists")
+            return
+        
+        filepath = "single_package.txt"
+
+        file = open(filepath, "w")
+        file.write(packageName)
+        file.close()
+
+        self.InstallWPackageNames(filepath)
+
+        remove(filepath)
+
     def InstallWPackageNames(self, path):
-        if exists(self.osName) is False:
-            print(f"{self.osName} is not exists")
+        if exists(self.venvName) is False:
+            print(f"{self.venvName} is not exists")
             return
 
         if exists(path) is False:
@@ -181,8 +196,8 @@ class StartManager:
     Update Functions
     """
     def UpdateEnvironment(self):
-        if exists(self.osName) is False:
-            print(f"{self.osName} is not exists")
+        if exists(self.venvName) is False:
+            print(f"{self.venvName} is not exists")
             return
 
         print("Updating ...")
