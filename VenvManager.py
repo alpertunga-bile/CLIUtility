@@ -116,6 +116,19 @@ class VenvManager:
 
         return venvCommand
     
+    def GetRunCommandInEnvironmentCommand(self, command):
+        venvCommand = ""
+        if self.osName == 'Linux':
+            venvCommand += f"source {self.venvName}/bin/activate && "
+            venvCommand += f"{command} && "
+            venvCommand += "deactivate"
+        elif self.osName == 'Windows':
+            venvCommand += f".\\{self.venvName}\\Scripts\\activate.bat && "
+            venvCommand += f"{command} && "
+            venvCommand += f".\\{self.venvName}\\Scripts\\deactivate.bat"
+
+        return venvCommand
+    
     """
     Run Functions
     """
@@ -130,6 +143,13 @@ class VenvManager:
             return
 
         self.RunCommand(self.GetRunFileCommand(filepath))
+
+    def RunCommandInEnvironment(self, command):
+        if exists(self.venvName) is False:
+            print(f"{self.venvName} is not exists")
+            return
+        
+        self.RunCommand(self.GetRunCommandInEnvironmentCommand(command))
 
     """
     Create Functions
