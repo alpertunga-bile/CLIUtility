@@ -24,9 +24,6 @@ class Loader:
         self.iteration = iter(givenList)
         self.SetAttributes(0, len(givenList), 1, description, loadingChar)
 
-    def SetValuesForDictKeysObject(self, givenDictKeys, description : str, loadingChar : str):
-        tempList = list(givenDictKeys)
-
     def __init__(self, iterableObject, description="Loader", loadingChar="#"):
         objectType = type(iterableObject)
         
