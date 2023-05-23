@@ -1,6 +1,6 @@
 from shutil import rmtree
 from os import remove
-from subprocess import call, DEVNULL, PIPE
+from subprocess import call, STDOUT
 from os.path import exists
 from platform import system
 from time import sleep
@@ -17,9 +17,11 @@ class VenvManager:
 
     def RunCommand(self, command):
         if self.isSilent:
-            result = call(command, shell=True, stdout=DEVNULL)
+            logFile = open("logs.txt", mode="w")
+            result = call(command, shell=True, stdout=logFile, stderr=STDOUT)
+            logFile.close()
         else:
-            result = call(command, shell=True, stdout=PIPE)
+            result = call(command, shell=True)
             _ = print("Command executed successfully") if result == 0 else print(f"Error occured when running {command}")
 
     def IsEnvironmentCreated(self):
@@ -34,7 +36,7 @@ class VenvManager:
         if self.osName == 'Linux':
             venvCommand += f"pip install virtualenv && virtual {self.venvName}"
         elif self.osName == 'Windows':
-            venvCommand += f"py -m venv {self.venvName}"
+            venvCommand += f"python -m venv {self.venvName}"
         
         return venvCommand
     
@@ -56,7 +58,7 @@ class VenvManager:
         packages = packageFile.readlines()
         packageFile.close()
 
-        pipPackageCommand = " ".join(packages)
+        pipPackageCommand = "".join(packages).replace("\n", " ")
 
         venvCommand = ""
         if self.osName == 'Linux':
