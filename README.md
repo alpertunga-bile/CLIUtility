@@ -31,5 +31,11 @@ for key, value in Loader(tempDict.items(), description="Test"):
 - You can specify your completer functions with words.
 - You can use it for get files and folders for given directory or current directory.
 ### VenvManager Class
-- You can create environments, install packages by name, install packages by txt file or install by requirements file.
-- Update the packages in the environment
+You can
+- Create virtual environment
+- Install packages with requirements file
+- Run scripts with args
+- Clone repository
+- Update repository
+- Install requirements from repository
+- Run scripts from repository
