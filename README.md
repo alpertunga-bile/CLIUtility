@@ -10,22 +10,22 @@
 #### Example For Range
 ```python
 for i in Loader(range(1, 10), description="Test"):
-        pass
+   pass
 ```
 #### Example For List, Set And Tuple
 ```python
 tempList = ["10", "2", "5"]
 for i in Loader(tempList, description="Test"):
-        pass
+   pass
 ```
 #### Example For Dictionary
 ```python
 tempDict = {"Physics":43, "Math":23}
 for key, value in Loader(tempDict.items(), description="Test"):
-        pass
+   pass
 ```
 #### Example Result
-```Test [####################################################################################################] %100```
+```Test [####################################################################################################] %100 ETA [  0 h|  0 m|  0 s]```
 ### Completer Class
 - Providing tab completer for CLI.
 - You can specify your completer functions with words.
