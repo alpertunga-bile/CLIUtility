@@ -1,8 +1,6 @@
 from Loader import Loader
-from VenvManager import VenvManager
-from Completer import Completer
+from time import sleep
 
 if __name__ == "__main__":
-    tempDict = {"Physics":43, "Math":23}
-    for key, value in Loader(tempDict.items(), description="Test"):
+    for i in Loader(range(0, 100), description="Test"):
         pass

@@ -1,5 +1,6 @@
-from datetime import datetime
 from collections.abc import KeysView, ItemsView
+import time
+from sys import stdout
 
 
 class Loader:
@@ -66,37 +67,43 @@ class Loader:
         self.Update(True)
         self.PrintBar(0.0)
         self.counter = self.start - 1
-        self.start_time = datetime.now()
-        self.end_time = datetime.now()
+        self.start_time = time.time()
+        self.end_time = time.time()
         return self
 
     def __next__(self):
         self.counter = self.counter + self.step
         if self.counter <= self.end:
-            self.start_time = datetime.now()
             self.Update(False)
-            self.end_time = datetime.now()
-            self.PrintBar((self.end_time - self.start_time).total_seconds())
+            self.end_time = time.time()
+            self.PrintBar(self.end_time - self.start_time)
+            self.start_time = time.time()
             return next(self.iteration)
         else:
             self.Update(True)
             self.PrintBar(0.0)
             print("\n")
             raise StopIteration
-        
+
     def PrintBar(self, eta: float) -> None:
         remains = 100 - self.percentage
 
-        remain_seconds = int(eta * self.percentage)
-        remain_minutes = int(remain_seconds / 60.0)
-        remian_hours = int(remain_minutes / 60.0)
+        total_seconds = eta * float(remains)
 
-        loadStr = self.desc + " ["
+        remain_hours = total_seconds / 3600.0
+        total_seconds -= float(int(remain_hours)) * 3600.0
+
+        remain_minutes = total_seconds / 60.0
+        total_seconds -= float(int(remain_minutes)) * 60.0
+
+        remain_seconds = total_seconds
+
+        loadStr = "\r" + self.desc + " ["
         loadStr += self.loadChar * self.percentage
         loadStr += " " * remains
-        loadStr += f"] %{self.percentage} ETA [{remian_hours:3} h|{remain_minutes:3} m|{remain_seconds:3} s]"
-        print(loadStr, end="\r")
-
+        loadStr += f"] %{self.percentage} ETA [{int(remain_hours):3} h| {int(remain_minutes):3} m| {remain_seconds:3.2f} s]  "
+        print(loadStr, end="")
+        stdout.flush()
 
     def Update(self, empty: bool = False):
         start_point = float(self.counter + self.toAdd)
